@@ -12,6 +12,9 @@ project_type: app
 # Tracks metadata for the flutter migrate command
 migration:
   platforms:
+    - platform: ohos
+      create_revision: 39285df71a97ffe0c23241dcc459d997a9d8b7c6
+      base_revision: 39285df71a97ffe0c23241dcc459d997a9d8b7c6
     - platform: root
       create_revision: 3b62efc2a3da49882f43c372e0bc53daef7295a6
       base_revision: 3b62efc2a3da49882f43c372e0bc53daef7295a6

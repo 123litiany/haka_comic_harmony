@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
+    show ExternalLibrary;
 import 'package:haka_comic/config/app_config.dart';
 import 'package:haka_comic/config/setup_config.dart';
 import 'package:haka_comic/database/download_task_helper.dart';
@@ -25,7 +27,13 @@ class StartupPrepare {
     await Future.wait([
       AppConf.initialize(),
       SetupConf.initialize(),
-      RustLib.init(),
+      // HarmonyOS port, 2026-10-16: FRB 2.12's platform loader has no OHOS
+      // branch. Resolve the packaged native library explicitly on OHOS.
+      RustLib.init(
+        externalLibrary: isOhos
+            ? ExternalLibrary.open('librust_lib_haka_comic.so')
+            : null,
+      ),
     ]);
 
     await _recoverPendingDownloadStorageOperations();

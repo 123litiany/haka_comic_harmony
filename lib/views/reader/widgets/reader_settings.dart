@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:haka_comic/utils/common.dart';
 import 'package:haka_comic/config/app_config.dart';
 import 'package:haka_comic/views/reader/providers/list_state_provider.dart';
 import 'package:haka_comic/views/reader/providers/reader_provider.dart';
@@ -195,8 +196,8 @@ class _ReaderSettingsState extends State<ReaderSettings> {
               valueListenable: enableVolume,
               builder: (context, value, child) {
                 return SwitchListTile(
-                  value: value,
-                  onChanged: (value) {
+                  value: !isOhos && value,
+                  onChanged: isOhos ? null : (value) {
                     AppConf().enableVolume = value;
                     enableVolume.value = value;
                     if (value) {
@@ -209,7 +210,7 @@ class _ReaderSettingsState extends State<ReaderSettings> {
                     }
                   },
                   title: const Text('音量键翻页'),
-                  subtitle: const Text('启用时，可以使用音量键翻页。'),
+                  subtitle: Text(isOhos ? '鸿蒙版暂不支持，请使用点击或滑动翻页。' : '启用时，可以使用音量键翻页。'),
                 );
               },
             ),

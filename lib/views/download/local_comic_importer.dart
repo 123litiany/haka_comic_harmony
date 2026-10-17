@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:haka_comic/utils/common.dart';
 import 'package:haka_comic/utils/extension.dart';
 import 'package:haka_comic/utils/native_folder_picker.dart';
+import 'package:haka_comic/rust/api/compress.dart';
 import 'package:haka_comic/views/download/background_downloader.dart';
 import 'package:haka_comic/views/download/download_storage.dart';
 import 'package:haka_comic/views/download/local_comic_files.dart';
@@ -100,6 +101,11 @@ class LocalComicImporter {
   }
 
   static Future<PickedLocalComicSource?> pickSource() async {
+    if (isOhos) {
+      // API 26 reports folder capability but the phone picker cannot confirm
+      // a directory on the tested image. Use the supported file workflow.
+      return pickArchiveSource();
+    }
     if (isAndroid || isIOS) {
       final snapshot = await NativeFolderPicker.pickDirectorySnapshot();
       if (snapshot == null) {
@@ -122,6 +128,33 @@ class LocalComicImporter {
       folderName: p.basename(path),
       directoryPath: path,
     );
+  }
+
+  /// A file picker works on phones which cannot authorize a whole directory.
+  /// Expand into a unique app-owned directory, never into an existing download.
+  static Future<PickedLocalComicSource?> pickArchiveSource() async {
+    final picked = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['zip', 'cbz'],
+      withData: false,
+      dialogTitle: '选择漫画 ZIP / CBZ',
+    );
+    if (picked == null) return null;
+    final file = picked.files.single;
+    final path = file.path;
+    if (path == null) throw const LocalComicImportException('无法读取所选压缩包');
+    final temporary = await (await getTemporaryDirectory()).createTemp('haka-import-');
+    try {
+      await decompress(sourceZipPath: path, outputFolderPath: temporary.path);
+      return PickedLocalComicSource(
+        folderName: p.basenameWithoutExtension(file.name),
+        directoryPath: temporary.path,
+        cleanupPath: temporary.path,
+      );
+    } catch (_) {
+      await temporary.delete(recursive: true);
+      rethrow;
+    }
   }
 
   static Future<void> cleanupSource(PickedLocalComicSource source) async {

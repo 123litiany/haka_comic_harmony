@@ -93,7 +93,13 @@ class Settings extends StatelessWidget {
             Block(
               title: '通用',
               children: [
-                if (!isIOS) const DownloadPathSetting(),
+                if (!isIOS && !isOhos) const DownloadPathSetting(),
+                if (isOhos)
+                  const ListTile(
+                    leading: Icon(Icons.folder_outlined),
+                    title: Text('下载位置：应用内存储'),
+                    subtitle: Text('可在下载列表导出 ZIP / PDF；卸载前请先导出。'),
+                  ),
                 const ClearCache(),
                 const Auth(),
                 MenuListTile.withAction(

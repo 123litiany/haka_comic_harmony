@@ -22,7 +22,7 @@ import 'package:haka_comic/widgets/button.dart';
 import 'package:haka_comic/widgets/global_mouse_back_listener.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:local_auth/local_auth.dart';
+import 'package:haka_comic/utils/device_authentication.dart';
 import 'package:haka_comic/utils/log.dart';
 
 void main(List<String> args) {
@@ -64,7 +64,8 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> with WindowListener, RequestMixin {
   late final _handler = checkIsUpdated.useRequest(
-    manual: !AppConf().checkUpdate,
+    // HarmonyOS port: do not advertise upstream Android/iOS releases.
+    manual: isOhos || !AppConf().checkUpdate,
     onSuccess: (v) async {
       if (v && mounted) {
         await Future.delayed(const Duration(milliseconds: 1500));
@@ -80,28 +81,14 @@ class _AppState extends State<App> with WindowListener, RequestMixin {
   bool isVerifying = false;
 
   void auth() async {
+    if (isVerifying) return;
     setState(() => isVerifying = true);
-    final auth = LocalAuthentication();
-    final canCheckBiometrics = await auth.canCheckBiometrics;
-    if (!canCheckBiometrics && !await auth.isDeviceSupported()) {
-      setState(() => isAuthorized = true);
-      return;
-    }
-    try {
-      final didAuthenticate = await auth.authenticate(
-        localizedReason: 'Please authenticate to access the app',
-      );
-      setState(() {
-        isAuthorized = didAuthenticate;
-        isVerifying = false;
-      });
-    } catch (e, st) {
-      Log.w('LocalAuthentication', error: e, stackTrace: st);
-      setState(() {
-        isAuthorized = false;
-        isVerifying = false;
-      });
-    }
+    final didAuthenticate = await authenticateDeviceAccess();
+    if (!mounted) return;
+    setState(() {
+      isAuthorized = didAuthenticate;
+      isVerifying = false;
+    });
   }
 
   @override

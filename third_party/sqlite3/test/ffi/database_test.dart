@@ -1,0 +1,293 @@
+@Tags(['ffi'])
+library;
+
+import 'dart:io';
+
+import 'package:path/path.dart';
+import 'package:sqlite3/sqlite3.dart';
+import 'package:sqlite3/src/ffi/implementation.dart';
+import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
+import '../common/utils.dart';
+
+/// Additional tests to `common_database_test.dart` that aren't supported on
+/// the web.
+void main() {
+  late Database database;
+
+  setUp(() => database = sqlite3.openInMemory());
+  tearDown(() => database.close());
+
+  test('can bind and retrieve 64 bit ints', () {
+    const value = 1 << 63;
+
+    final stmt = database.prepare('SELECT ?');
+    final result = stmt.select(<int>[value]);
+    expect(result, [
+      {'?': value},
+    ]);
+  });
+
+  test('open read-only', () async {
+    final path = d.path('read_only.db');
+
+    // Opening a non-existent database should fail
+    expect(
+      () => sqlite3.open(path, mode: OpenMode.readOnly),
+      throwsSqlError(SqlError.SQLITE_CANTOPEN, SqlError.SQLITE_CANTOPEN),
+    );
+
+    // Open in read-write mode to create the database
+    var db = sqlite3.open(path);
+    // Change the user version to test read-write access
+    db.userVersion = 1;
+    db.close();
+
+    // Open in read-only
+    db = sqlite3.open(path, mode: OpenMode.readOnly);
+
+    // Change the user version to test read-only mode
+    expect(
+      () => db.userVersion = 2,
+      throwsSqlError(SqlError.SQLITE_READONLY, SqlError.SQLITE_READONLY),
+    );
+
+    // Check that it has not changed
+    expect(db.userVersion, 1);
+
+    db.close();
+  });
+
+  test('throws meaningful exception for open failure', () {
+    final path = d.path('nested/does/not/exist.db');
+
+    expect(
+      () => sqlite3.open(path),
+      throwsSqlError(SqlError.SQLITE_CANTOPEN, SqlError.SQLITE_CANTOPEN),
+    );
+  });
+
+  test('busy handler', () {
+    final path = d.path('test.db');
+    final a = sqlite3.open(path);
+    final b = sqlite3.open(path);
+    addTearDown(() {
+      a.close();
+      b.close();
+    });
+
+    a.execute('BEGIN EXCLUSIVE');
+    final busyHandlerInvocations = <int>[];
+    b.busyHandler = (int amount) {
+      busyHandlerInvocations.add(amount);
+      return amount < 3;
+    };
+
+    expect(() => b.execute('BEGIN EXCLUSIVE'), throwsSqlError(5, 5));
+    expect(busyHandlerInvocations, [0, 1, 2, 3]);
+  });
+
+  group('borrowed connections', () {
+    test('fromPointer', () {
+      final originalConnection = sqlite3.openInMemory();
+      originalConnection.execute('CREATE TABLE foo (bar);');
+      final ptr = originalConnection.handle;
+
+      final borrowed = sqlite3.fromPointer(ptr, borrowed: true);
+      expect(borrowed.select('SELECT * FROM foo'), isEmpty);
+      borrowed.close();
+      expect(() => borrowed.select('SELECT 1'), throwsStateError);
+
+      // Closing a borrowed connection should keep the actual connection active.
+      expect(originalConnection.select('SELECT * FROM foo'), isEmpty);
+      originalConnection.close();
+    });
+
+    test('leak', () {
+      final originalConnection = sqlite3.openInMemory();
+      originalConnection.execute('CREATE TABLE foo (bar);');
+      final ptr = originalConnection.leak();
+
+      // originalConnection no longer owns the underlying connection at this
+      // point.
+      originalConnection.close();
+      expect(() => originalConnection.execute('SELECT 1'), throwsStateError);
+
+      // But the connection is still open!
+      final sameConnection = sqlite3.fromPointer(ptr);
+      expect(sameConnection.select('SELECT * FROM foo'), isEmpty);
+      sameConnection.close();
+    });
+  });
+
+  group('borrowed statements', () {
+    test('fromPointer', () {
+      final db = sqlite3.openInMemory();
+      db.execute('CREATE TABLE foo (bar);');
+
+      final originalStatement = db.prepare('SELECT * FROM foo');
+      final ptr = originalStatement.handle;
+
+      final borrowed = db.statementFromPointer(
+        statement: ptr,
+        sql: 'unused',
+        borrowed: true,
+      );
+      expect(borrowed.select(), isEmpty);
+      borrowed.close();
+      expect(() => borrowed.select(), throwsStateError);
+
+      // Closing a borrowed statement should keep the actual statement active.
+      expect(originalStatement.select(), isEmpty);
+      originalStatement.close();
+    });
+
+    test('leak', () {
+      final db = sqlite3.openInMemory();
+      db.execute('CREATE TABLE foo (bar);');
+
+      final originalStatement = db.prepare('SELECT * FROM foo');
+      final ptr = originalStatement.leak();
+
+      // originalStatement no longer owns the underlying sqlite3_stmt at this
+      // point.
+      originalStatement.close();
+      expect(() => originalStatement.select(), throwsStateError);
+
+      // But the statement is still open!
+      final sameStatement = db.statementFromPointer(
+        statement: ptr,
+        sql: 'unused',
+      );
+      expect(sameStatement.select(), isEmpty);
+      sameStatement.close();
+      db.close();
+    });
+  });
+
+  group('backup', () {
+    late String path;
+
+    setUp(() {
+      path = d.path('test.db');
+    });
+
+    test('detects if is in-memory database', () {
+      final db1 = sqlite3.open(path) as FfiDatabaseImplementation;
+      final db2 = sqlite3.openInMemory() as FfiDatabaseImplementation;
+
+      expect(db1.isInMemory, isFalse);
+      expect(db2.isInMemory, isTrue);
+
+      db1.dispose();
+      db2.dispose();
+    });
+
+    test('copy in-memory', () {
+      final db1 = sqlite3.openInMemory();
+      db1.execute('CREATE TABLE a(b INTEGER);');
+      db1.execute('INSERT INTO a VALUES (1);');
+
+      //Should not be included in copy
+      final db2 = sqlite3.copyIntoMemory(db1);
+
+      db1.execute('INSERT INTO a VALUES (2);');
+
+      expect(db2.select('SELECT * FROM a'), hasLength(1));
+      expect(db1.select('SELECT * FROM a'), hasLength(2));
+
+      db1.close();
+      db2.close();
+    });
+
+    test('restore from disk into memory', () {
+      final db1 = sqlite3.open(path);
+      db1.execute('CREATE TABLE a(b INTEGER);');
+      db1.execute('INSERT INTO a VALUES (1);');
+
+      final db2 = sqlite3.copyIntoMemory(db1);
+
+      //Should not be included in copy
+      db1.execute('INSERT INTO a VALUES (2);');
+
+      expect(db2.select('SELECT * FROM a'), hasLength(1));
+      expect(db1.select('SELECT * FROM a'), hasLength(2));
+
+      db1.close();
+      db2.close();
+    });
+
+    group('backup memory to disk', () {
+      var inputs = [-1, 1, 5, 1024];
+
+      for (var nPage in inputs) {
+        test('nPage = $nPage', () async {
+          final db1 = sqlite3.openInMemory();
+          db1.execute('CREATE TABLE a(b INTEGER);');
+          db1.execute('INSERT INTO a VALUES (1);');
+
+          final db2 = sqlite3.open(path);
+
+          final progressStream = db1.backup(db2, nPage: nPage);
+          await expectLater(progressStream, emitsDone);
+
+          //Should not be included in backup
+          db1.execute('INSERT INTO a VALUES (2);');
+
+          db1.close();
+          db2.close();
+
+          final db3 = sqlite3.open(path);
+
+          expect(db3.select('SELECT * FROM a'), hasLength(1));
+
+          db3.close();
+        });
+      }
+    });
+
+    group('backup disk to disk', () {
+      var inputs = [-1, 1, 5, 1024];
+      for (var nPage in inputs) {
+        test('nPage = $nPage', () async {
+          final pathFrom = d.path('test_from.db');
+          Directory(dirname(pathFrom)).createSync(recursive: true);
+
+          if (File(pathFrom).existsSync()) {
+            File(pathFrom).deleteSync();
+          }
+
+          final db1 = sqlite3.open(pathFrom);
+
+          db1.execute('CREATE TABLE a(b INTEGER);');
+          db1.execute('INSERT INTO a VALUES (1);');
+
+          final db2 = sqlite3.open(path);
+
+          final progressStream = db1.backup(db2, nPage: nPage);
+          await expectLater(
+            progressStream,
+            emitsInOrder(<Matcher>[emitsThrough(1), emitsDone]),
+          );
+
+          //Should not be included in backup
+          db1.execute('INSERT INTO a VALUES (2);');
+
+          db1.close();
+          db2.close();
+
+          final db3 = sqlite3.open(path);
+
+          expect(db3.select('SELECT * FROM a'), hasLength(1));
+
+          db3.close();
+
+          if (File(pathFrom).existsSync()) {
+            File(pathFrom).deleteSync();
+          }
+        });
+      }
+    });
+  });
+}

@@ -6,14 +6,21 @@ version: 1.2.7
 
 environment:
   sdk: ">=3.12.0 <4.0.0"
-  flutter: 3.44.8
+  # HarmonyOS port: allow the 3.44.9 OHOS toolchain; keep the same minor series.
+  flutter: ">=3.44.8 <3.45.0"
 
 dependencies:
+  file_picker_ohos:
+    path: third_party/file_picker_ohos
+  local_auth_ohos:
+    path: third_party/local_auth_ohos
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.9
   go_router: ^17.3.0
   shared_preferences: ^2.5.5
+  shared_preferences_ohos:
+    path: third_party/shared_preferences_ohos
   dio: ^5.10.0
   crypto: ^3.0.7
   json_annotation: ^4.11.0
@@ -24,10 +31,14 @@ dependencies:
   sqlite3: ^3.3.4
   sqlite_async: ^0.14.3
   path_provider: ^2.1.6
+  path_provider_ohos:
+    path: third_party/path_provider_ohos
   provider: ^6.1.5+1
   dynamic_color: ^1.8.1
   path: ^1.9.1
   url_launcher: ^6.3.2
+  url_launcher_ohos:
+    path: third_party/url_launcher_ohos
   yaml: ^3.1.3
   jiffy: ^6.4.5
   version: ^3.0.2
@@ -56,7 +67,14 @@ dependencies:
   socks5_proxy: ^2.1.1
   dynamic_app_icon_flutter_plus: ^2.1.0
 
+dependency_overrides:
+  sqlite3:
+    path: third_party/sqlite3
+  sqlite3_connection_pool:
+    path: third_party/sqlite3_connection_pool
+
 dev_dependencies:
+  local_auth_platform_interface: ^1.1.0
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0

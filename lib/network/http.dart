@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:haka_comic/utils/common.dart' show isOhos;
 import 'package:dio/dio.dart';
 import 'package:haka_comic/config/setup_config.dart';
 import 'package:haka_comic/network/cache.dart';
@@ -509,6 +510,9 @@ Future<List<ChapterImage>> fetchChapterImagesIsolate(
 
 ///用于检查是否有新的release发布
 Future<bool> checkIsUpdated() async {
+  // HarmonyOS port, 2026-10-16: enable a separate HAP release source before
+  // public distribution. Upstream's release feed does not describe this port.
+  if (isOhos) return false;
   final response = await Dio().get(
     'https://cdn.jsdelivr.net/gh/raoxwup/haka_comic@main/pubspec.yaml',
   );

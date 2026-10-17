@@ -93,6 +93,8 @@ void showCreator(BuildContext context, Creator? creator) {
 }
 
 bool isIOS = Platform.isIOS;
+// HarmonyOS port, 2026-10-16: keep OHOS out of iOS/desktop fallbacks.
+bool isOhos = Platform.operatingSystem == 'ohos';
 bool isAndroid = Platform.isAndroid;
 bool isMacOS = Platform.isMacOS;
 bool isWindows = Platform.isWindows;

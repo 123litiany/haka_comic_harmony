@@ -4,6 +4,7 @@ import 'package:haka_comic/config/app_config.dart';
 import 'package:haka_comic/config/setup_config.dart';
 import 'package:haka_comic/network/http.dart';
 import 'package:haka_comic/utils/extension.dart';
+import 'package:haka_comic/utils/common.dart';
 import 'package:haka_comic/utils/log.dart';
 import 'package:haka_comic/utils/request/request.dart';
 import 'package:haka_comic/widgets/toast.dart';
@@ -82,8 +83,9 @@ class _AboutState extends State<About> with RequestMixin {
           const SizedBox(height: 20),
           SwitchListTile(
             title: const Text('启动时检查更新'),
-            value: _checkUpdate,
-            onChanged: (value) {
+            subtitle: isOhos ? const Text('鸿蒙测试版暂未开放在线更新') : null,
+            value: !isOhos && _checkUpdate,
+            onChanged: isOhos ? null : (value) {
               setState(() {
                 _checkUpdate = value;
                 AppConf().checkUpdate = value;
@@ -98,10 +100,22 @@ class _AboutState extends State<About> with RequestMixin {
                     strokeWidth: 2,
                   )
                 : const Icon(Icons.arrow_forward_ios),
-            onTap: () => _handler.run(),
+            onTap: () {
+              if (isOhos) {
+                _launchURL('https://github.com/123litiany/haka_comic_harmony/releases');
+              } else {
+                _handler.run();
+              }
+            },
           ),
+          if (isOhos)
+            ListTile(
+              title: const Text('鸿蒙版源码与安装说明'),
+              trailing: const Icon(Icons.launch),
+              onTap: () => _launchURL('https://github.com/123litiany/haka_comic_harmony'),
+            ),
           ListTile(
-            title: const Text('Github'),
+            title: Text(isOhos ? '上游开源项目' : 'Github'),
             trailing: const Icon(Icons.launch),
             onTap: () => _launchURL('https://github.com/raoxwup/haka_comic'),
           ),

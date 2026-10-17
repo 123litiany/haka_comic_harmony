@@ -45,6 +45,23 @@ app.*.map.json
 /android/app/release
 
 *.jks
+# HarmonyOS local build state and private signing material
+**/oh_modules/
+**/.hvigor/
+**/local.properties
+*.p12
+*.pfx
+*.p7b
+*.cer
+*.csr
+*.key
+ohos/entry/build/
+ohos/build/
+ohos/entry/libs/
+third_party/*/ohos-lib/
+third_party/*/example/
+harmony-artifacts/
 .appdata/
 .claude/
 docs/
+ohos/entry/src/main/resources/base/profile/buildinfo.json5

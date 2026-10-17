@@ -1,0 +1,18 @@
+# HaKa HarmonyOS port, 2026-10-16. See LICENSE and ../UPSTREAM.md.
+name: file_picker_ohos
+description: Native OHOS file picker backend for HaKa's file_picker 11 channel.
+version: 1.0.1
+publish_to: none
+environment:
+  sdk: ">=3.10.0 <4.0.0"
+  flutter: ">=3.38.0"
+dependencies:
+  flutter:
+    sdk: flutter
+flutter:
+  plugin:
+    implements: file_picker
+    platforms:
+      ohos:
+        package: com.file_picker
+        pluginClass: FilePickerPlugin

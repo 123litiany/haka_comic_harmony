@@ -8,6 +8,7 @@ import 'package:haka_comic/utils/android_download_saver.dart';
 import 'package:haka_comic/utils/common.dart';
 import 'package:haka_comic/utils/loader.dart';
 import 'package:haka_comic/utils/log.dart';
+import 'package:haka_comic/utils/ohos_file_saver.dart';
 import 'package:haka_comic/utils/save_to_folder_ios.dart';
 import 'package:haka_comic/widgets/toast.dart';
 import 'package:path/path.dart' as p;
@@ -33,6 +34,8 @@ class ComicExporter {
     try {
       if (isAndroid) {
         await _exportForAndroid(context: context, items: items, type: type);
+      } else if (isOhos) {
+        await _exportForOhos(items: items, type: type);
       } else if (isDesktop) {
         await _exportForDesktop(context: context, items: items, type: type);
       } else {
@@ -44,6 +47,45 @@ class ComicExporter {
     } finally {
       Loader.hide();
       onComplete?.call();
+    }
+  }
+
+  // HarmonyOS port, 2026-10-16: save through the system document picker.
+  // A selected document URI must not be treated as an ordinary writable path.
+  static Future<void> _exportForOhos({
+    required List<ComicExportItem> items,
+    required ExportFileType type,
+  }) async {
+    Loader.show();
+    final cache = await getApplicationCacheDirectory();
+    final temporaryRoot = await Directory(
+      p.join(cache.path, exportFileTempDir),
+    ).create(recursive: true);
+    final temporary = await temporaryRoot.createTemp('ohos-');
+    var savedCount = 0;
+    try {
+      for (final item in items) {
+        final fileName = '${p.basename(item.fileStem)}.${type.name}';
+        final output = File(p.join(temporary.path, fileName));
+        await _buildFile(
+          sourceFolderPath: item.sourceFolderPath,
+          outputPath: output.path,
+          type: type,
+        );
+        final saved = await OhosFileSaver.save(
+          fileName: fileName,
+          sourcePath: output.path,
+        );
+        if (saved == null) {
+          Toast.show(message: '已取消，已保存 $savedCount 个文件');
+          return;
+        }
+        savedCount++;
+        await output.delete();
+      }
+      Toast.show(message: '已保存 $savedCount 个文件');
+    } finally {
+      await temporary.delete(recursive: true);
     }
   }
 

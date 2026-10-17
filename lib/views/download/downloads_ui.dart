@@ -555,7 +555,7 @@ class _NormalAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: const Text('我的下载'),
       actions: [
         IconButton(
-          tooltip: '导入漫画',
+          tooltip: isOhos ? '导入漫画 ZIP / CBZ' : '导入漫画',
           onPressed: onImportLocalComic,
           icon: const Icon(Icons.file_upload),
         ),

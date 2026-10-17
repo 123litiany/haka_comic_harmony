@@ -1,4 +1,45 @@
-# HaKa Comic
+# HaKa Comic · HarmonyOS
+
+基于 [raoxwup/haka_comic](https://github.com/raoxwup/haka_comic) 的**非官方鸿蒙原生移植**，由 [123litiany](https://github.com/123litiany) 维护。使用 Flutter OHOS 与 ArkTS 平台接口，不依赖安卓兼容环境。
+
+> **鸿蒙预览版，尚非稳定版。** 当前验证环境是 HarmonyOS 7.0.0.107 / API 26 的 x64 模拟器。手机 arm64 包需要自行签名，尚无真机验证；不能将模拟器测试通过视作真机侧载或完整功能通过。
+
+[下载与版本记录](https://github.com/123litiany/haka_comic_harmony/releases) · [移植进度与构建说明](HARMONYOS.md) · [侧载安装说明](INSTALL_HARMONYOS.md) · [第三方来源](third_party/UPSTREAM.md) · [反馈问题](https://github.com/123litiany/haka_comic_harmony/issues)
+
+## 鸿蒙版进度
+
+| 功能 | 当前验证情况 |
+| --- | --- |
+| 启动、登录、分类、个人页 | 模拟器实测通过；重启保留登录状态 |
+| 主题与本地存储 | 模拟器实测通过 |
+| SQLite、Rust ZIP | 写入重开、压缩解压内容比对通过 |
+| 图片与 PDF | 自建 PNG 解码、排序和三页 PDF 结构检查通过 |
+| 文档导出 | 系统保存与取消通过；大文件仍待测试 |
+| ZIP/CBZ 导入与本地阅读 | 自建三页 ZIP 经系统选择器导入，阅读器显示并翻至 3/3 页；CBZ 和大文件待测 |
+| 在线阅读、网络下载、WebDAV | 保留上游实现，完整流程待验证 |
+| 真机、签名、侧载 | 待真机验证 |
+
+HAP 下载入口在本仓库 **[Releases → Assets](https://github.com/123litiany/haka_comic_harmony/releases)**，与源码标签、SHA256 和变更说明配套。手机使用 **arm64** 包；**x64 仅用于模拟器**。`debug-unsigned` 是未签名调试预览包，需要按设备签名，不能直接点击安装。使用小白调试助手前请阅读[安装说明](INSTALL_HARMONYOS.md)。
+
+本地导入：进入「我的 → 我的下载」，点击右上角导入按钮，选择包含 JPG/PNG/WebP 漫画图片的 ZIP 或 CBZ。下载内容保存在应用内，可导出 ZIP/PDF；卸载前先导出。当前鸿蒙版不提供文件夹直接导入、自定义下载目录和音量键翻页，更新通过「关于 → 检查更新」打开本仓库发布页。
+
+### 模拟器实测
+
+以下仅为自行生成的测试图片，不含漫画服务内容或账号信息。
+
+| 本地 ZIP 导入 | 阅读至第三页 |
+| --- | --- |
+| <img src="screenshots/harmony-import.png" width="260"> | <img src="screenshots/harmony-reader.png" width="260"> |
+
+## 开源与来源
+
+保留上游 GPLv3 许可证、版权和历史，移植代码以同一许可证分发。引入的平台插件及其修改记录见 [third_party/UPSTREAM.md](third_party/UPSTREAM.md)。本项目不附带漫画内容、账号凭据或签名私钥。
+
+下方保留上游介绍，其平台支持、下载地址和声明描述的是原项目；鸿蒙适配状态以上表和 `HARMONYOS.md` 为准。上游 README 中的非商业用途声明与标准 GPLv3 存在歧义，保留原文，不声称已获得额外授权或作者澄清。
+
+---
+
+# 上游 HaKa Comic
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg?logo=gnu)](https://opensource.org/licenses/GPL-3.0)
 [![GitHub Stars](https://img.shields.io/github/stars/raoxwup/haka_comic.svg?style=flat&logo=github)](https://github.com/raoxwup/haka_comic/stargazers)
