@@ -1,6 +1,6 @@
 # 哔咔漫画 鸿蒙原生无广版
 
-基于 [raoxwup/haka_comic](https://github.com/raoxwup/haka_comic) 的**非官方鸿蒙原生移植**，由 [123litiany](https://github.com/123litiany) 维护。使用 Flutter OHOS 与 ArkTS 平台接口，不依赖安卓兼容环境。
+`HaKa` 是面向 HarmonyOS / HarmonyOS NEXT 的非官方 **鸿蒙哔咔 / 哔咔鸿蒙版（PICACG）** 客户端，基于 [raoxwup/haka_comic](https://github.com/raoxwup/haka_comic) 移植，由 [123litiany](https://github.com/123litiany) 维护。使用 Flutter OHOS 与 ArkTS 平台接口，不依赖安卓兼容环境。
 
 > **鸿蒙预览版，尚非稳定版。** 应用名为 **HaKa**。当前 1.0.1 已在 HarmonyOS 7.0.0.107 / API 26 x64 模拟器验证；新版 ARM64 release 包需自行签名并进行真机复测。旧版手机测试反馈以对应 Release 为准。
 
