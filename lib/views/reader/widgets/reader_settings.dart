@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:haka_comic/utils/common.dart';
 import 'package:haka_comic/config/app_config.dart';
+import 'package:haka_comic/utils/ohos_reader.dart';
 import 'package:haka_comic/views/reader/providers/list_state_provider.dart';
 import 'package:haka_comic/views/reader/providers/reader_provider.dart';
 
@@ -16,6 +17,8 @@ class _ReaderSettingsState extends State<ReaderSettings> {
   final enableGesture = ValueNotifier(AppConf().enableGesture);
   final enablePageAnimation = ValueNotifier(AppConf().enablePageAnimation);
   final enableVolume = ValueNotifier(AppConf().enableVolume);
+  final keepScreenOn = ValueNotifier(AppConf().readerKeepScreenOn);
+  final brightness = ValueNotifier(AppConf().readerBrightness);
   final verticalCenterFraction = ValueNotifier(
     AppConf().verticalCenterFraction,
   );
@@ -30,6 +33,8 @@ class _ReaderSettingsState extends State<ReaderSettings> {
     enableGesture.dispose();
     enablePageAnimation.dispose();
     enableVolume.dispose();
+    keepScreenOn.dispose();
+    brightness.dispose();
     verticalCenterFraction.dispose();
     horizontalCenterFraction.dispose();
     preloadImageCount.dispose();
@@ -196,11 +201,13 @@ class _ReaderSettingsState extends State<ReaderSettings> {
               valueListenable: enableVolume,
               builder: (context, value, child) {
                 return SwitchListTile(
-                  value: !isOhos && value,
-                  onChanged: isOhos ? null : (value) {
+                  value: value,
+                  onChanged: (value) {
                     AppConf().enableVolume = value;
                     enableVolume.value = value;
-                    if (value) {
+                    if (isOhos) {
+                      OhosReaderBridge.refreshPreferences();
+                    } else if (value) {
                       volumeController.startListening(
                         volumeUpAction: volumeUpAction,
                         volumeDownAction: volumeDownAction,
@@ -210,10 +217,59 @@ class _ReaderSettingsState extends State<ReaderSettings> {
                     }
                   },
                   title: const Text('音量键翻页'),
-                  subtitle: Text(isOhos ? '鸿蒙版暂不支持，请使用点击或滑动翻页。' : '启用时，可以使用音量键翻页。'),
+                  subtitle: Text(
+                    isOhos ? '音量＋向前翻页，音量－向后翻页；离开阅读后恢复调节音量。' : '启用时，可以使用音量键翻页。',
+                  ),
                 );
               },
             ),
+            if (isOhos) ...[
+              ValueListenableBuilder(
+                valueListenable: keepScreenOn,
+                builder: (context, value, child) => SwitchListTile(
+                  value: value,
+                  title: const Text('阅读时保持亮屏'),
+                  subtitle: const Text('退出阅读或切到后台后恢复系统息屏设置。'),
+                  onChanged: (value) {
+                    keepScreenOn.value = value;
+                    AppConf().readerKeepScreenOn = value;
+                    OhosReaderBridge.refreshPreferences();
+                  },
+                ),
+              ),
+              ValueListenableBuilder(
+                valueListenable: brightness,
+                builder: (context, value, child) => Column(
+                  children: [
+                    SwitchListTile(
+                      value: value < 0,
+                      title: const Text('阅读亮度跟随系统'),
+                      subtitle: const Text('关闭后可单独调整阅读亮度，离开阅读后恢复。'),
+                      onChanged: (followSystem) {
+                        brightness.value = followSystem ? -1 : 0.5;
+                        AppConf().readerBrightness = brightness.value;
+                        OhosReaderBridge.refreshPreferences();
+                      },
+                    ),
+                    if (value >= 0)
+                      ListTile(
+                        title: Text('阅读亮度 ${(value * 100).round()}%'),
+                        subtitle: Slider(
+                          value: value,
+                          min: 0.05,
+                          max: 1,
+                          divisions: 19,
+                          onChanged: (value) => brightness.value = value,
+                          onChangeEnd: (value) {
+                            AppConf().readerBrightness = value;
+                            OhosReaderBridge.refreshPreferences();
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
             ValueListenableBuilder(
               valueListenable: preloadImageCount,
               builder: (context, value, child) {

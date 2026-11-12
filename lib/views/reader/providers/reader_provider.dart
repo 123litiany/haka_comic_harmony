@@ -420,7 +420,7 @@ class ReaderProvider extends RequestProvider {
   void _startPageTurnTimer() {
     turnPageTimer?.cancel();
     turnPageTimer = Timer.periodic(Duration(seconds: _interval), (timer) {
-      if (handler.state case Loading()) return;
+      if (!_readerActive || handler.state is Loading) return;
       next();
     });
   }
@@ -431,6 +431,24 @@ class ReaderProvider extends RequestProvider {
     _isPageTurnPausedByToolbar = false;
     _startPageTurnTimer();
     isPageTurning = true;
+  }
+
+  bool _readerActive = true;
+
+  /// Pause without losing the user's automatic reading mode or progress.
+  void setReaderActive(bool active) {
+    if (active == _readerActive) return;
+    _readerActive = active;
+    if (!active) {
+      turnPageTimer?.cancel();
+      _smoothTicker?.stop();
+    } else if (isPageTurning && !_isPageTurnPausedByToolbar) {
+      if (_isSmoothScroll) {
+        _smoothTicker?.start();
+      } else {
+        _startPageTurnTimer();
+      }
+    }
   }
 
   /// 平滑滚动 Ticker
@@ -453,7 +471,7 @@ class ReaderProvider extends RequestProvider {
     _isPageTurnPausedByToolbar = false;
     _smoothTicker?.dispose();
     _smoothTicker = vsync.createTicker((_) {
-      if (handler.state case Loading()) return;
+      if (!_readerActive || handler.state is Loading) return;
       if (!itemScrollController.isAttached) return;
       if (pageNo == images.length - 1) {
         if (!isLastChapter) {
@@ -531,7 +549,7 @@ class ReaderProvider extends RequestProvider {
     _smoothTicker?.dispose();
     preloadController.dispose();
     _pageNoTimer?.cancel();
-    volumeController.stopListening();
+    if (!isOhos) volumeController.stopListening();
     super.dispose();
   }
 }

@@ -36,6 +36,9 @@ env:
 jobs:
   setup:
     name: Setup
+    # This HarmonyOS fork publishes locally verified HAPs. Keep the upstream
+    # cross-platform workflow available through an explicit manual dispatch.
+    if: ${{ github.repository == 'raoxwup/haka_comic' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     outputs:
       app-version: ${{ steps.get_version.outputs.app-version }}
@@ -571,6 +574,7 @@ jobs:
       - linux-build
     if: >-
       ${{ always()
+          && needs.setup.result == 'success'
           && !contains(needs.*.result, 'failure')
           && !contains(needs.*.result, 'cancelled') }}
     runs-on: ubuntu-latest

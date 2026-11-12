@@ -77,6 +77,21 @@ void main() {
     },
   );
 
+  test(
+    'automatic reading pauses while hidden and resumes without losing its mode',
+    () {
+      final provider = createProvider(<ComicReadRecord>[]);
+      provider.startPageTurn();
+      expect(provider.turnPageTimer!.isActive, isTrue);
+      provider.setReaderActive(false);
+      expect(provider.turnPageTimer!.isActive, isFalse);
+      expect(provider.isPageTurning, isTrue);
+      provider.setReaderActive(true);
+      expect(provider.turnPageTimer!.isActive, isTrue);
+      provider.stopPageTurn();
+    },
+  );
+
   testWidgets(
     'does not restart read record debounce for the same pending page',
     (tester) async {

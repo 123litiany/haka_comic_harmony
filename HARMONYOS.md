@@ -8,6 +8,8 @@
 
 ## 当前状态
 
+2026-11-12：`1.0.1 Preview 2` 阅读体验更新，默认构建模式已改为 release/AOT；新增图标、音量键翻页、亮屏、独立阅读亮度与后台暂停。两种架构均已构建，应用范围静态检查无 error/warning，阅读功能更新时 47 项回归通过；更名后重新构建并核对桌面名称。详细包体对比、图标提示词、安装包和本轮设备验证见 [HARMONY_READER_UPDATE.md](HARMONY_READER_UPDATE.md)。下文 2026-10-17 的 debug 包、校验值和验证过程属于历史记录。
+
 2026-10-17：已在 HarmonyOS 7 模拟器通过登录、本地 ZIP 导入与阅读、离线原生功能实测。完整功能、真机和分发签名仍未验证；不可把本分支标为完整鸿蒙移植版。
 
 - DevEco Studio 26.0.0.851，SDK API 26。
@@ -32,11 +34,11 @@ flutter --version
 
 ```powershell
 # 手机架构；x64 为模拟器架构
-.\script\harmony-build.ps1 -Architecture arm64
-.\script\harmony-build.ps1 -Architecture x64
+.\script\harmony-build.ps1 -Architecture arm64 -BuildMode release
+.\script\harmony-build.ps1 -Architecture x64 -BuildMode release
 ```
 
-脚本清理旧架构的生成文件，编译 SQLite、连接池和 HaKa Rust 模块，再打包并核对 HAP 中的库。结果是未签名 debug 预览包，不是稳定发行版。Flutter 可能因未配置签名返回非零状态；脚本会明确报告，并独立检查生成的压缩包。不要仅凭存在 HAP 就判断移植成功。
+脚本清理旧架构的生成文件，编译 SQLite、连接池和 HaKa Rust 模块，再打包并核对 HAP 中的库。默认生成未签名 release/AOT 包；需要调试模式时传入 `-BuildMode debug`。当前脚本显式使用 `--no-codesign`，固定正常入口和 HAP 版本，并对构建非零退出报错。release 模式额外要求 `libapp.so` 且不含 debug kernel。安装签名和运行验证仍需分别完成。
 
 ### 已完成的验证
 

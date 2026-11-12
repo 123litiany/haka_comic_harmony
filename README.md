@@ -1,12 +1,14 @@
-# HaKa Comic · HarmonyOS
+# 哔咔漫画 鸿蒙原生无广版
 
 基于 [raoxwup/haka_comic](https://github.com/raoxwup/haka_comic) 的**非官方鸿蒙原生移植**，由 [123litiany](https://github.com/123litiany) 维护。使用 Flutter OHOS 与 ArkTS 平台接口，不依赖安卓兼容环境。
 
-> **鸿蒙预览版，尚非稳定版。** 当前验证环境是 HarmonyOS 7.0.0.107 / API 26 的 x64 模拟器。手机 arm64 包需要自行签名，尚无真机验证；不能将模拟器测试通过视作真机侧载或完整功能通过。
+> **鸿蒙预览版，尚非稳定版。** 应用名为 **HaKa**。当前 1.0.1 已在 HarmonyOS 7.0.0.107 / API 26 x64 模拟器验证；新版 ARM64 release 包需自行签名并进行真机复测。旧版手机测试反馈以对应 Release 为准。
 
 [下载与版本记录](https://github.com/123litiany/haka_comic_harmony/releases) · [移植进度与构建说明](HARMONYOS.md) · [侧载安装说明](INSTALL_HARMONYOS.md) · [第三方来源](third_party/UPSTREAM.md) · [反馈问题](https://github.com/123litiany/haka_comic_harmony/issues)
 
 ## 鸿蒙版进度
+
+**[1.0.1 Preview 2 下载与更新日志](https://github.com/123litiany/haka_comic_harmony/releases/tag/v1.0.1-harmony-preview.2)**：应用显示名为 `HaKa`，增加淡绿色 `Ha` / `ka` 图标、鸿蒙音量键翻页、阅读亮屏、独立阅读亮度、后台暂停自动阅读和平板声明。改用 release/AOT 构建后，手机包约 **34 MB**，相比旧 debug 包减少约 **74%**。构建、测试范围及包体对比见 [更新记录](HARMONY_READER_UPDATE.md)。
 
 | 功能 | 当前验证情况 |
 | --- | --- |
@@ -17,11 +19,12 @@
 | 文档导出 | 系统保存与取消通过；大文件仍待测试 |
 | ZIP/CBZ 导入与本地阅读 | 自建三页 ZIP 经系统选择器导入，阅读器显示并翻至 3/3 页；CBZ 和大文件待测 |
 | 在线阅读、网络下载、WebDAV | 保留上游实现，完整流程待验证 |
-| 真机、签名、侧载 | 待真机验证 |
+| 音量键、阅读亮屏和独立亮度 | 模拟器实测通过；离开阅读后恢复系统行为 |
+| 真机、签名、侧载 | 新版 ARM64 release 包待真机复测 |
 
-HAP 下载入口在本仓库 **[Releases → Assets](https://github.com/123litiany/haka_comic_harmony/releases)**，与源码标签、SHA256 和变更说明配套。手机使用 **arm64** 包；**x64 仅用于模拟器**。`debug-unsigned` 是未签名调试预览包，需要按设备签名，不能直接点击安装。使用小白调试助手前请阅读[安装说明](INSTALL_HARMONYOS.md)。
+HAP 下载入口在本仓库 **[Releases → Assets](https://github.com/123litiany/haka_comic_harmony/releases)**，与源码标签、SHA256 和变更说明配套。手机使用 **`haka-ohos-arm64-release-unsigned.hap`**；**x64 仅用于模拟器**。`release` 表示编译模式，当前仍是未签名预览包，需要按设备签名。使用小白调试助手前请阅读[安装说明](INSTALL_HARMONYOS.md)。
 
-本地导入：进入「我的 → 我的下载」，点击右上角导入按钮，选择包含 JPG/PNG/WebP 漫画图片的 ZIP 或 CBZ。下载内容保存在应用内，可导出 ZIP/PDF；卸载前先导出。当前鸿蒙版不提供文件夹直接导入、自定义下载目录和音量键翻页，更新通过「关于 → 检查更新」打开本仓库发布页。
+本地导入：进入「我的 → 我的下载」，点击右上角导入按钮，选择包含 JPG/PNG/WebP 漫画图片的 ZIP 或 CBZ。下载内容保存在应用内，可导出 ZIP/PDF；卸载前先导出。当前鸿蒙版不提供文件夹直接导入、自定义下载目录。`1.0.1` 可在阅读设置中开启音量键翻页、保持亮屏和独立亮度；旧 Preview 1 不含这些新增能力。更新通过「关于 → 检查更新」打开本仓库发布页。
 
 ### 模拟器实测
 

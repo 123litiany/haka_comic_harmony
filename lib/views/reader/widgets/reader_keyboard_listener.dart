@@ -63,7 +63,8 @@ class _ReaderKeyboardListenerState extends State<ReaderKeyboardListener> {
         }
         if (event is KeyDownEvent || event is KeyRepeatEvent) {
           final handler = widget.handlers[event.logicalKey];
-          handler?.call();
+          if (handler == null) return KeyEventResult.ignored;
+          handler();
           return KeyEventResult.handled;
         }
         return KeyEventResult.ignored;

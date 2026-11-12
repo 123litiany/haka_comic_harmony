@@ -10,6 +10,8 @@ permissions:
 jobs:
   update-altstore-json:
     name: Update alt_store.json
+    # HAP-only releases in the HarmonyOS fork do not update the upstream IPA feed.
+    if: ${{ github.repository == 'raoxwup/haka_comic' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6

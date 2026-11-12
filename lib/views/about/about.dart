@@ -75,7 +75,9 @@ class _AboutState extends State<About> with RequestMixin {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40.0),
             child: Text(
-              'HaKa Comic是一个开源免费的第三方哔咔漫画客户端',
+              isOhos
+                  ? 'HaKa 是一个开源免费的第三方哔咔漫画客户端'
+                  : 'HaKa Comic是一个开源免费的第三方哔咔漫画客户端',
               textAlign: TextAlign.center,
               style: context.textTheme.bodyMedium,
             ),

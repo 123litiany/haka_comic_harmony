@@ -15,6 +15,8 @@ import 'package:haka_comic/views/reader/widgets/reader_keyboard_listener.dart';
 import 'package:haka_comic/views/reader/widgets/horizontal_list/horizontal_list.dart';
 import 'package:haka_comic/views/reader/widgets/vertical_list/vertical_list.dart';
 import 'package:haka_comic/widgets/error_page.dart';
+import 'package:haka_comic/utils/common.dart';
+import 'package:haka_comic/views/reader/widgets/harmony_reader_scope.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class Reader extends StatefulWidget {
@@ -25,6 +27,7 @@ class Reader extends StatefulWidget {
 }
 
 class _ReaderState extends State<Reader> {
+  bool _drawerOpen = false;
   double _scrollAccumulator = 0.0;
   static const double _hideToolbarScrollThreshold = 30.0;
   @override
@@ -36,7 +39,7 @@ class _ReaderState extends State<Reader> {
     // 设置沉浸式阅读模式
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
 
-    if (AppConf().enableVolume) {
+    if (!isOhos && AppConf().enableVolume) {
       context.reader.volumeController.startListening(
         volumeUpAction: context.reader.volumeUpAction,
         volumeDownAction: context.reader.volumeDownAction,
@@ -88,7 +91,8 @@ class _ReaderState extends State<Reader> {
           : const HorizontalList(),
     );
 
-    return Scaffold(
+    final scaffold = Scaffold(
+      onDrawerChanged: (open) => setState(() => _drawerOpen = open),
       backgroundColor: context.colorScheme.surfaceContainerLowest,
       body: Stack(
         children: [
@@ -104,8 +108,10 @@ class _ReaderState extends State<Reader> {
                   LogicalKeyboardKey.pageDown: next,
                   LogicalKeyboardKey.keyA: prev,
                   LogicalKeyboardKey.keyD: next,
-                  LogicalKeyboardKey.audioVolumeUp: prev,
-                  LogicalKeyboardKey.audioVolumeDown: next,
+                  if (!isOhos && AppConf().enableVolume) ...{
+                    LogicalKeyboardKey.audioVolumeUp: prev,
+                    LogicalKeyboardKey.audioVolumeDown: next,
+                  },
                 },
                 child: listWidget,
               ),
@@ -161,6 +167,18 @@ class _ReaderState extends State<Reader> {
           ],
         ),
       ),
+    );
+    if (!isOhos) return scaffold;
+    return HarmonyReaderScope(
+      interactionsEnabled: !_drawerOpen,
+      onPrevious: () {
+        if (context.reader.handler.state is Success) prev();
+      },
+      onNext: () {
+        if (context.reader.handler.state is Success) next();
+      },
+      onActivityChanged: context.reader.setReaderActive,
+      child: scaffold,
     );
   }
 }

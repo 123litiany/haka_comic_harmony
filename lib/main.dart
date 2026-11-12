@@ -209,7 +209,7 @@ class _AppState extends State<App> with WindowListener, RequestMixin {
         lightScheme = _generateColorScheme(primary);
         darkScheme = _generateColorScheme(primary, Brightness.dark);
         return MaterialApp.router(
-          title: "HaKa Comic",
+          title: isOhos ? 'HaKa' : 'HaKa Comic',
           routerConfig: appRouter,
           theme: getTheme(lightScheme),
           darkTheme: getTheme(darkScheme, Brightness.dark),

@@ -2,7 +2,7 @@
 
 ## 当前可用性
 
-本项目尚在开发，目前没有完成真机侧载验证的正式 HAP。已通过 HarmonyOS 7 / API 26 x64 模拟器运行验证，不能据此保证所有纯血鸿蒙手机可安装。
+本项目尚在开发。当前 1.0.1 Preview 2 已通过 HarmonyOS 7 / API 26 x64 模拟器运行验证；新版 ARM64 release 包仍需真机签名安装复测。旧 Preview 1 的真机反馈见对应 Release，不能替代新版验证。
 
 发布页：[123litiany/haka_comic_harmony Releases](https://github.com/123litiany/haka_comic_harmony/releases)。预览版附件包含 HAP、SHA256 校验文件、对应源码标签和该版测试范围。不要下载上游的 APK 作为鸿蒙安装包。
 
@@ -14,6 +14,9 @@
 | x64 | 仅用于电脑上的鸿蒙模拟器 |
 | unsigned | 未签名，需要为自己的设备配置有效签名 |
 | debug / prerelease | 调试或预览版，不是稳定发行版 |
+| release | 优化后的编译模式；不代表已签名或已成为稳定发行版 |
+
+当前手机包为 `haka-ohos-arm64-release-unsigned.hap`，约 34 MB；电脑模拟器使用 `haka-ohos-x64-release-unsigned.hap`。当前没有合并两种架构的新版通用包，旧 Preview 1 的通用调试包不含 1.0.1 新功能。
 
 ## 签名与安装流程
 

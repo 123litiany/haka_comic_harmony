@@ -73,6 +73,8 @@ class AppConf {
 
   /// 是否启用音量键翻页
   bool _enableVolume = true;
+  bool _readerKeepScreenOn = true;
+  double _readerBrightness = -1;
 
   /// 竖向阅读菜单呼出占比
   double _verticalCenterFraction = 0.3;
@@ -165,6 +167,15 @@ class AppConf {
     instance._scale = prefsWithCache.getDouble('scale') ?? 1.0;
     instance._slipFactor = prefsWithCache.getDouble('slipFactor') ?? 0.5;
     instance._enableVolume = prefsWithCache.getBool('enableVolume') ?? true;
+    instance._readerKeepScreenOn =
+        prefsWithCache.getBool('readerKeepScreenOn') ?? true;
+    final readerBrightness = prefsWithCache.getDouble('readerBrightness') ?? -1;
+    instance._readerBrightness =
+        readerBrightness.isFinite &&
+            (readerBrightness == -1 ||
+                (readerBrightness >= 0.05 && readerBrightness <= 1))
+        ? readerBrightness
+        : -1;
     instance._verticalCenterFraction =
         prefsWithCache.getDouble('verticalCenterFraction') ?? 0.3;
     instance._horizontalCenterFraction =
@@ -319,6 +330,19 @@ class AppConf {
   set enableVolume(bool value) {
     _enableVolume = value;
     SharedPreferencesUtil.prefsWithCache.setBool('enableVolume', value);
+  }
+
+  set readerKeepScreenOn(bool value) {
+    _readerKeepScreenOn = value;
+    SharedPreferencesUtil.prefsWithCache.setBool('readerKeepScreenOn', value);
+  }
+
+  set readerBrightness(double value) {
+    _readerBrightness = value == -1 ? -1 : value.clamp(0.05, 1.0);
+    SharedPreferencesUtil.prefsWithCache.setDouble(
+      'readerBrightness',
+      _readerBrightness,
+    );
   }
 
   set verticalCenterFraction(double value) {
@@ -517,6 +541,8 @@ class AppConf {
   double get scale => _scale;
   double get slipFactor => _slipFactor;
   bool get enableVolume => _enableVolume;
+  bool get readerKeepScreenOn => _readerKeepScreenOn;
+  double get readerBrightness => _readerBrightness;
   double get verticalCenterFraction => _verticalCenterFraction;
   double get horizontalCenterFraction => _horizontalCenterFraction;
 
