@@ -1,11 +1,21 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:haka_comic/config/app_config.dart';
 
 const apiKey = 'C69BAF41DA5ABD1FFEDC6D2FEA56B';
 const secretKey =
     "~d}\$Q7\$eIni=V)9\\RK/P.RM4;9[7|@/CA}b~OW!3?EV`:<>M7pddUBL5n|0/*Cn";
-const nonce = "4ce7a7aa759b40f794d189a88b84aba8";
+
+// Generate a fresh request identifier and sign that exact value. Never reuse a
+// global constant across requests or installations.
+String generateNonce() {
+  final random = Random.secure();
+  return List.generate(
+    16,
+    (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
+  ).join();
+}
 
 /// 图片质量
 enum ImageQuality {
@@ -51,7 +61,6 @@ Map<String, String> defaultHeaders = {
   "app-platform": "android",
   "app-uuid": "defaultUuid",
   "app-version": "2.2.1.3.3.4",
-  "nonce": nonce,
   "app-channel": '1',
 };
 
@@ -79,10 +88,12 @@ String getTimestamp() {
 
 Map<String, String> getHeaders(String url, Method method) {
   final timestamp = getTimestamp();
+  final nonce = generateNonce();
   final signature = getSignature(url, timestamp, nonce, method);
   final conf = AppConf();
   return {
     ...defaultHeaders,
+    "nonce": nonce,
     "time": timestamp,
     "signature": signature,
     "authorization": conf.token,

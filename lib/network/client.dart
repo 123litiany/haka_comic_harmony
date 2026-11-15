@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:haka_comic/config/app_config.dart';
+import 'package:haka_comic/network/api_exception.dart';
 import 'package:haka_comic/network/utils.dart';
 import 'package:haka_comic/router/app_router.dart';
 
@@ -40,11 +41,19 @@ class Client {
               }
 
               final extra = err.requestOptions.extra;
+              if (extra['retryOnFailure'] == false) {
+                return handler.reject(err);
+              }
               int retryCount = extra['retryCount'] ?? 0;
               if (shouldRetry && retryCount < _maxRetries - 1) {
                 await Future.delayed(const Duration(seconds: 1));
                 final reqOpt = err.requestOptions;
                 reqOpt.extra['retryCount'] = retryCount + 1;
+                final signedPath = reqOpt.extra['signedPath'] as String;
+                final method = Method.values.firstWhere(
+                  (value) => value.value == reqOpt.method,
+                );
+                reqOpt.headers.addAll(getHeaders(signedPath, method));
                 try {
                   final ret = await _client.fetch(reqOpt);
                   return handler.resolve(ret);
@@ -62,6 +71,7 @@ class Client {
     String path, {
     Map<String, dynamic>? payload,
     String? baseUrl,
+    bool retryOnFailure = true,
   }) async {
     String queryString = '';
     if (method == Method.get) {
@@ -71,40 +81,47 @@ class Client {
         ),
       ).query;
     }
-    final headers = method == Method.get
-        ? getHeaders(queryString.isEmpty ? path : '$path?$queryString', method)
-        : getHeaders(path, method);
-    _client.options.headers = headers;
-    if (baseUrl != null) {
-      _client.options.baseUrl = baseUrl;
-    }
+    final signedPath = method == Method.get && queryString.isNotEmpty
+        ? '$path?$queryString'
+        : path;
+    final options = Options(
+      headers: getHeaders(signedPath, method),
+      extra: {'signedPath': signedPath, 'retryOnFailure': retryOnFailure},
+    );
+    final requestPath = baseUrl == null
+        ? path
+        : Uri.parse(baseUrl).resolve(path).toString();
     try {
       Response response;
       switch (method) {
         case Method.get:
           response = await _client.get(
-            path,
+            requestPath,
+            options: options,
             queryParameters: payload,
             cancelToken: _cancelToken,
           );
           break;
         case Method.post:
           response = await _client.post(
-            path,
+            requestPath,
+            options: options,
             data: payload,
             cancelToken: _cancelToken,
           );
           break;
         case Method.put:
           response = await _client.put(
-            path,
+            requestPath,
+            options: options,
             data: payload,
             cancelToken: _cancelToken,
           );
           break;
         case Method.delete:
           response = await _client.delete(
-            path,
+            requestPath,
+            options: options,
             data: payload,
             cancelToken: _cancelToken,
           );
@@ -117,8 +134,7 @@ class Client {
         case 200:
           return response.data;
         case 400:
-          var data = response.data;
-          throw data['message'];
+          throw ApiException.fromResponse(response.statusCode, response.data);
         case 401:
           _cancelToken.cancel();
           _cancelToken = CancelToken();
@@ -154,8 +170,15 @@ class Client {
     String path, {
     Map<String, dynamic>? data,
     String? baseUrl,
+    bool retryOnFailure = true,
   }) {
-    return _request(Method.post, path, payload: data, baseUrl: baseUrl);
+    return _request(
+      Method.post,
+      path,
+      payload: data,
+      baseUrl: baseUrl,
+      retryOnFailure: retryOnFailure,
+    );
   }
 
   static Future<Map<String, dynamic>> put(

@@ -51,6 +51,16 @@ class _LoginState extends State<Login> with RequestMixin {
 
   void _update(_) => setState(() {});
 
+  Future<void> _openRegister() async {
+    final account = await context.push<String>('/register');
+    if (!mounted || account == null) return;
+    setState(() {
+      _emailController.text = account;
+      _passwordController.clear();
+    });
+    _passwordFocusNode.requestFocus();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -196,10 +206,7 @@ class _LoginState extends State<Login> with RequestMixin {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 const Text('没有账号？'),
-                TextButton(
-                  onPressed: () => context.push('/register'),
-                  child: const Text('注册'),
-                ),
+                TextButton(onPressed: _openRegister, child: const Text('注册')),
               ],
             ),
           ],

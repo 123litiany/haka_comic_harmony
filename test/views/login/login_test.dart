@@ -59,6 +59,26 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Proxy settings page'), findsOneWidget);
   });
+
+  testWidgets('a registered account is filled back into the login form', (
+    tester,
+  ) async {
+    final router = _buildRouter();
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.enterText(find.byType(TextFormField).at(0), 'oldAccount');
+    await tester.enterText(find.byType(TextFormField).at(1), 'oldPassword');
+    await tester.ensureVisible(find.widgetWithText(TextButton, '注册'));
+    await tester.tap(find.widgetWithText(TextButton, '注册'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Complete registration'));
+    await tester.pumpAndSettle();
+    final fields = tester
+        .widgetList<TextFormField>(find.byType(TextFormField))
+        .toList();
+    expect(fields[0].controller!.text, 'newTestAccount');
+    expect(fields[1].controller!.text, isEmpty);
+  });
 }
 
 GoRouter _buildRouter() {
@@ -75,7 +95,12 @@ GoRouter _buildRouter() {
       ),
       GoRoute(
         path: '/register',
-        builder: (_, _) => const Scaffold(body: Text('Register page')),
+        builder: (context, _) => Scaffold(
+          body: TextButton(
+            onPressed: () => context.pop('newTestAccount'),
+            child: const Text('Complete registration'),
+          ),
+        ),
       ),
     ],
   );

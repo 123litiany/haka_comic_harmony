@@ -6,6 +6,7 @@ import 'package:haka_comic/network/cache.dart';
 import 'package:haka_comic/network/models.dart';
 import 'package:haka_comic/network/utils.dart';
 import 'package:haka_comic/network/client.dart';
+import 'package:haka_comic/network/api_exception.dart';
 import 'package:version/version.dart';
 import 'package:yaml/yaml.dart';
 
@@ -406,7 +407,16 @@ Future<void> updatePassword(UpdatePasswordPayload payload) async {
 
 /// 注册
 Future<void> register(RegisterPayload payload) async {
-  await Client.post('auth/register', data: payload.toJson());
+  // A lost response does not mean that the account was not created. Never
+  // replay registration automatically and turn a success into a conflict.
+  final response = await Client.post(
+    'auth/register',
+    data: payload.toJson(),
+    retryOnFailure: false,
+  );
+  if (response['code'] != 200 || response['message'] != 'success') {
+    throw ApiException.fromResponse(200, response);
+  }
 }
 
 /// 消息通知
@@ -440,6 +450,7 @@ class DownloadIsolateClient {
     Map<String, dynamic>? queryParameters,
   }) async {
     final timestamp = getTimestamp();
+    final nonce = generateNonce();
     final signature = getSignature(
       '$url?page=${queryParameters?['page'] ?? 1}',
       timestamp,
@@ -449,6 +460,7 @@ class DownloadIsolateClient {
     _dio.options.baseUrl = baseUrl;
     _dio.options.headers = {
       ...defaultHeaders,
+      "nonce": nonce,
       "time": timestamp,
       "signature": signature,
       "app-channel": '1',
