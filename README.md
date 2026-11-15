@@ -2,17 +2,20 @@
 
 `HaKa` 是面向 HarmonyOS / HarmonyOS NEXT 的非官方 **鸿蒙哔咔 / 哔咔鸿蒙版（PICACG）** 客户端，基于 [raoxwup/haka_comic](https://github.com/raoxwup/haka_comic) 移植，由 [123litiany](https://github.com/123litiany) 维护。使用 Flutter OHOS 与 ArkTS 平台接口，不依赖安卓兼容环境。
 
-> **鸿蒙预览版，尚非稳定版。** 应用名为 **HaKa**。当前 1.0.1 已在 HarmonyOS 7.0.0.107 / API 26 x64 模拟器验证；新版 ARM64 release 包需自行签名并进行真机复测。旧版手机测试反馈以对应 Release 为准。
+> **鸿蒙预览版，尚非稳定版。** 应用名为 **HaKa**。当前 1.0.2 已在 HarmonyOS 7.0.0.107 / API 26 x64 模拟器验证；本版 ARM64 release 包需自行签名并进行真机复测。既有版本的手机测试反馈以对应 Release 为准。
 
 [下载与版本记录](https://github.com/123litiany/haka_comic_harmony/releases) · [移植进度与构建说明](HARMONYOS.md) · [侧载安装说明](INSTALL_HARMONYOS.md) · [第三方来源](third_party/UPSTREAM.md) · [反馈问题](https://github.com/123litiany/haka_comic_harmony/issues)
 
 ## 鸿蒙版进度
+
+**[1.0.2 Preview 3 下载与更新日志](https://github.com/123litiany/haka_comic_harmony/releases/tag/v1.0.2-harmony-preview.3)**：改进注册错误提示，增加随机昵称/登录账号生成，防止重复提交，注册成功后回填登录页；完善请求签名与重试。34 项相关回归和实际 Dart 接口的新账号注册、两条线路登录通过。**服务器仍曾对随机昵称返回重名，根因未完全确认。** 详见[注册改进记录](REGISTRATION_FIX.md)。
 
 **[1.0.1 Preview 2 下载与更新日志](https://github.com/123litiany/haka_comic_harmony/releases/tag/v1.0.1-harmony-preview.2)**：应用显示名为 `HaKa`，增加淡绿色 `Ha` / `ka` 图标、鸿蒙音量键翻页、阅读亮屏、独立阅读亮度、后台暂停自动阅读和平板声明。改用 release/AOT 构建后，手机包约 **34 MB**，相比旧 debug 包减少约 **74%**。构建、测试范围及包体对比见 [更新记录](HARMONY_READER_UPDATE.md)。
 
 | 功能 | 当前验证情况 |
 | --- | --- |
 | 启动、登录、分类、个人页 | 模拟器实测通过；重启保留登录状态 |
+| 新账号注册 | 实际 Dart 接口注册及两条线路登录通过；服务端对部分随机昵称的重名响应根因未完全确认 |
 | 主题与本地存储 | 模拟器实测通过 |
 | SQLite、Rust ZIP | 写入重开、压缩解压内容比对通过 |
 | 图片与 PDF | 自建 PNG 解码、排序和三页 PDF 结构检查通过 |
@@ -24,7 +27,7 @@
 
 HAP 下载入口在本仓库 **[Releases → Assets](https://github.com/123litiany/haka_comic_harmony/releases)**，与源码标签、SHA256 和变更说明配套。手机使用 **`haka-ohos-arm64-release-unsigned.hap`**；**x64 仅用于模拟器**。`release` 表示编译模式，当前仍是未签名预览包，需要按设备签名。使用小白调试助手前请阅读[安装说明](INSTALL_HARMONYOS.md)。
 
-本地导入：进入「我的 → 我的下载」，点击右上角导入按钮，选择包含 JPG/PNG/WebP 漫画图片的 ZIP 或 CBZ。下载内容保存在应用内，可导出 ZIP/PDF；卸载前先导出。当前鸿蒙版不提供文件夹直接导入、自定义下载目录。`1.0.1` 可在阅读设置中开启音量键翻页、保持亮屏和独立亮度；旧 Preview 1 不含这些新增能力。更新通过「关于 → 检查更新」打开本仓库发布页。
+本地导入：进入「我的 → 我的下载」，点击右上角导入按钮，选择包含 JPG/PNG/WebP 漫画图片的 ZIP 或 CBZ。下载内容保存在应用内，可导出 ZIP/PDF；卸载前先导出。当前鸿蒙版不提供文件夹直接导入、自定义下载目录。`1.0.1` 及以后版本可在阅读设置中开启音量键翻页、保持亮屏和独立亮度；旧 Preview 1 不含这些新增能力。更新通过「关于 → 检查更新」打开本仓库发布页。
 
 ### 模拟器实测
 

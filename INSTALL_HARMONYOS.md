@@ -2,7 +2,7 @@
 
 ## 当前可用性
 
-本项目尚在开发。当前 1.0.1 Preview 2 已通过 HarmonyOS 7 / API 26 x64 模拟器运行验证；新版 ARM64 release 包仍需真机签名安装复测。旧 Preview 1 的真机反馈见对应 Release，不能替代新版验证。
+本项目尚在开发。当前 1.0.2 Preview 3 已通过 HarmonyOS 7 / API 26 x64 模拟器覆盖安装及启动验证；本版 ARM64 release 包仍需真机签名安装与注册复测。既有版本的真机反馈见各自 Release，不能替代本版验证。
 
 发布页：[123litiany/haka_comic_harmony Releases](https://github.com/123litiany/haka_comic_harmony/releases)。预览版附件包含 HAP、SHA256 校验文件、对应源码标签和该版测试范围。不要下载上游的 APK 作为鸿蒙安装包。
 
