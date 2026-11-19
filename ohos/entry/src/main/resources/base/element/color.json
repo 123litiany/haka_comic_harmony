@@ -3,6 +3,9 @@
     {
       "name": "start_window_background",
       "value": "#FFFFFF"
-    }
+    },
+    { "name": "card_surface", "value": "#E7F4EE" },
+    { "name": "card_action", "value": "#F6FBF8" },
+    { "name": "card_ink", "value": "#18382E" }
   ]
 }

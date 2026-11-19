@@ -61,7 +61,9 @@ class ProFile extends StatelessWidget {
               UiAvatar(source: user.avatar, size: 80),
               Text(
                 user.name,
-                style: context.textTheme.titleMedium,
+                style: context.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -88,6 +90,7 @@ class ProFile extends StatelessWidget {
             top: 10 + context.top,
             child: IconButton(
               onPressed: () => context.push('/personal_editor'),
+              tooltip: '编辑资料',
               icon: const Icon(Icons.drive_file_rename_outline),
             ),
           ),

@@ -1,6 +1,10 @@
+import 'dart:ui' show ImageFilter;
+
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:haka_comic/utils/common.dart';
 import 'package:haka_comic/utils/extension.dart';
 import 'package:haka_comic/utils/ui.dart';
 
@@ -9,30 +13,21 @@ class AppNavigationBar extends StatelessWidget {
     super.key,
     required this.selectedIndex,
     required this.onDestinationSelected,
+    this.scrollController,
   });
 
   static const double _kDesktopNavigationWidth = 200;
 
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
+  final ScrollController? scrollController;
 
   Widget _buildMobileNavigationBar() {
     return NavigationBar(
       selectedIndex: selectedIndex,
       onDestinationSelected: onDestinationSelected,
       labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-      destinations: [
-        const NavigationDestination(
-          icon: Icon(Icons.category_outlined),
-          label: '分类',
-          selectedIcon: Icon(Icons.category),
-        ),
-        const NavigationDestination(
-          icon: Icon(Icons.person_outline),
-          label: '我的',
-          selectedIcon: Icon(Icons.person),
-        ),
-      ],
+      destinations: _destinations,
     );
   }
 
@@ -129,9 +124,202 @@ class AppNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return UiMode.m1(context)
-        ? _buildMobileNavigationBar()
-        : _buildDesktopNavigationMenu(context);
+    if (!UiMode.m1(context)) return _buildDesktopNavigationMenu(context);
+    return isOhos
+        ? _FloatingNavigationBar(
+            selectedIndex: selectedIndex,
+            onDestinationSelected: onDestinationSelected,
+            scrollController: scrollController,
+          )
+        : _buildMobileNavigationBar();
+  }
+}
+
+const _destinations = [
+  NavigationDestination(
+    icon: Icon(Icons.category_outlined),
+    label: '分类',
+    selectedIcon: Icon(Icons.category),
+  ),
+  NavigationDestination(
+    icon: Icon(Icons.person_outline),
+    label: '我的',
+    selectedIcon: Icon(Icons.person),
+  ),
+];
+
+class _FloatingNavigationBar extends StatefulWidget {
+  const _FloatingNavigationBar({
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    required this.scrollController,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
+  final ScrollController? scrollController;
+
+  @override
+  State<_FloatingNavigationBar> createState() => _FloatingNavigationBarState();
+}
+
+class _FloatingNavigationBarState extends State<_FloatingNavigationBar> {
+  double? _dragAlignment;
+  Drag? _pageDrag;
+
+  void _select(int index) {
+    if (index == widget.selectedIndex) return;
+    HapticFeedback.selectionClick();
+    widget.onDestinationSelected(index);
+  }
+
+  void _track(double x, double width) {
+    final alignment = (4 * x / width - 2).clamp(-1.0, 1.0).toDouble();
+    setState(() => _dragAlignment = alignment);
+  }
+
+  void _finishSwipe(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    final position = velocity.abs() > 400
+        ? velocity
+        : _dragAlignment ?? (widget.selectedIndex == 0 ? -1.0 : 1.0);
+    setState(() => _dragAlignment = null);
+    _select(position < 0 ? 0 : 1);
+  }
+
+  void _startPageDrag(DragStartDetails details) {
+    final position = widget.scrollController?.positions.singleOrNull;
+    if (position == null ||
+        !position.hasContentDimensions ||
+        !position.physics.shouldAcceptUserOffset(position)) {
+      return;
+    }
+    _pageDrag = position.drag(details, () => _pageDrag = null);
+  }
+
+  @override
+  void dispose() {
+    _pageDrag?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = context.colorScheme;
+    final dark = scheme.brightness == Brightness.dark;
+    final highContrast = MediaQuery.highContrastOf(context);
+    final reducedMotion = MediaQuery.disableAnimationsOf(context);
+    final radius = BorderRadius.circular(26);
+    final surface = scheme.surface.withValues(alpha: dark ? 0.72 : 0.63);
+    final navigation = LayoutBuilder(
+      builder: (context, constraints) => GestureDetector(
+        excludeFromSemantics: true,
+        dragStartBehavior: DragStartBehavior.down,
+        onHorizontalDragStart: (details) =>
+            _track(details.localPosition.dx, constraints.maxWidth),
+        onHorizontalDragUpdate: (details) =>
+            _track(details.localPosition.dx, constraints.maxWidth),
+        onHorizontalDragEnd: _finishSwipe,
+        onHorizontalDragCancel: () => setState(() => _dragAlignment = null),
+        onVerticalDragStart: _startPageDrag,
+        onVerticalDragUpdate: (details) => _pageDrag?.update(details),
+        onVerticalDragEnd: (details) => _pageDrag?.end(details),
+        onVerticalDragCancel: () => _pageDrag?.cancel(),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: AnimatedAlign(
+                    alignment: Alignment(
+                      _dragAlignment ?? (widget.selectedIndex == 0 ? -1 : 1),
+                      0,
+                    ),
+                    duration: _dragAlignment != null || reducedMotion
+                        ? Duration.zero
+                        : const Duration(milliseconds: 200),
+                    curve: Curves.easeOutCubic,
+                    child: FractionallySizedBox(
+                      widthFactor: 0.5,
+                      heightFactor: 1,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: highContrast
+                              ? scheme.secondaryContainer
+                              : scheme.secondaryContainer.withValues(
+                                  alpha: dark ? 0.64 : 0.58,
+                                ),
+                          borderRadius: BorderRadius.circular(21),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            NavigationBar(
+              selectedIndex: widget.selectedIndex,
+              onDestinationSelected: _select,
+              height: 64,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              indicatorColor: Colors.transparent,
+              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+              destinations: _destinations,
+            ),
+          ],
+        ),
+      ),
+    );
+
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: radius,
+                boxShadow: [
+                  BoxShadow(
+                    color: scheme.shadow.withValues(alpha: dark ? 0.17 : 0.07),
+                    blurRadius: 14,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: DecoratedBox(
+                position: DecorationPosition.foreground,
+                decoration: BoxDecoration(
+                  borderRadius: radius,
+                  border: Border.all(
+                    color: highContrast
+                        ? scheme.outline
+                        : scheme.onSurface.withValues(
+                            alpha: dark ? 0.24 : 0.13,
+                          ),
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: radius,
+                  child: highContrast
+                      ? ColoredBox(color: scheme.surface, child: navigation)
+                      : BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                          child: ColoredBox(color: surface, child: navigation),
+                        ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

@@ -1,0 +1,17 @@
+{
+  "forms": [
+    {
+      "name": "HaKaReading",
+      "displayName": "$string:reading_card_label",
+      "description": "$string:reading_card_description",
+      "src": "./ets/form/ReadingCard.ets",
+      "uiSyntax": "arkts",
+      "isDynamic": false,
+      "isDefault": true,
+      "updateEnabled": false,
+      "defaultDimension": "2*2",
+      "supportDimensions": ["2*2", "2*4"],
+      "resizable": true
+    }
+  ]
+}

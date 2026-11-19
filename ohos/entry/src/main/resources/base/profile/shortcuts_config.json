@@ -1,0 +1,48 @@
+{
+  "shortcuts": [
+    {
+      "shortcutId": "search",
+      "label": "$string:shortcut_search",
+      "icon": "$media:shortcut_search",
+      "wants": [{
+        "bundleName": "io.github.litiany123.haka_comic",
+        "moduleName": "entry",
+        "abilityName": "EntryAbility",
+        "parameters": {"hakaAction": "search"}
+      }]
+    },
+    {
+      "shortcutId": "history",
+      "label": "$string:shortcut_history",
+      "icon": "$media:shortcut_history",
+      "wants": [{
+        "bundleName": "io.github.litiany123.haka_comic",
+        "moduleName": "entry",
+        "abilityName": "EntryAbility",
+        "parameters": {"hakaAction": "history"}
+      }]
+    },
+    {
+      "shortcutId": "favorites",
+      "label": "$string:shortcut_favorites",
+      "icon": "$media:shortcut_favorites",
+      "wants": [{
+        "bundleName": "io.github.litiany123.haka_comic",
+        "moduleName": "entry",
+        "abilityName": "EntryAbility",
+        "parameters": {"hakaAction": "favorites"}
+      }]
+    },
+    {
+      "shortcutId": "rank",
+      "label": "$string:shortcut_rank",
+      "icon": "$media:shortcut_rank",
+      "wants": [{
+        "bundleName": "io.github.litiany123.haka_comic",
+        "moduleName": "entry",
+        "abilityName": "EntryAbility",
+        "parameters": {"hakaAction": "rank"}
+      }]
+    }
+  ]
+}

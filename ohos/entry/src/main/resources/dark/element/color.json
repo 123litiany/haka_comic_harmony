@@ -1,0 +1,7 @@
+{
+  "color": [
+    { "name": "card_surface", "value": "#1A3028" },
+    { "name": "card_action", "value": "#294338" },
+    { "name": "card_ink", "value": "#E0F4E8" }
+  ]
+}

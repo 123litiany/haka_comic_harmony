@@ -37,19 +37,24 @@ class ComicSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    final section = InkWell(
       onTap: () => context.push(route),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           ListTile(
-            leading: Icon(icon),
-            title: Text(title, style: context.textTheme.titleMedium),
+            leading: Icon(icon, color: context.colorScheme.primary),
+            title: Text(
+              title,
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (count != null) Tag(tag: count.toString()),
-                const Icon(Icons.chevron_right),
+                const Icon(Icons.chevron_right_rounded),
               ],
             ),
           ),
@@ -77,6 +82,15 @@ class ComicSection extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Material(
+        color: context.colorScheme.surfaceContainerLow.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(18),
+        clipBehavior: Clip.antiAlias,
+        child: section,
       ),
     );
   }

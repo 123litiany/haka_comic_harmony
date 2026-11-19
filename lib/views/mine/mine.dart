@@ -13,7 +13,14 @@ import 'package:haka_comic/views/mine/comic_preview_section.dart';
 import 'package:haka_comic/views/mine/profile.dart';
 
 class Mine extends StatefulWidget {
-  const Mine({super.key});
+  const Mine({
+    super.key,
+    this.floatingNavigation = false,
+    this.scrollController,
+  });
+
+  final bool floatingNavigation;
+  final ScrollController? scrollController;
 
   @override
   State<Mine> createState() => _MineState();
@@ -30,25 +37,44 @@ class _MineState extends State<Mine> {
   Widget build(BuildContext context) {
     final state = context.userSelector((p) => p.userHandler.state);
     return ListView(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+      controller: widget.scrollController,
+      padding: EdgeInsets.only(
+        bottom: 20 + (widget.floatingNavigation ? context.bottom : 0),
+      ),
       children: [
         _ProfileHeader(state: state),
         const HistoryComics(),
         const Favorites(),
-        const _MenuItem(
-          icon: Icons.download,
-          title: '我的下载',
-          route: '/downloads',
-        ),
-        const _MenuItem(
-          icon: Icons.comment,
-          title: '我的评论',
-          route: '/personal_comments',
-        ),
-        const _MenuItem(
-          icon: Icons.bookmark,
-          title: '本地收藏夹',
-          route: '/local_favorites',
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: Material(
+            color: context.colorScheme.surfaceContainerLow.withValues(
+              alpha: 0.82,
+            ),
+            borderRadius: BorderRadius.circular(18),
+            clipBehavior: Clip.antiAlias,
+            child: const Column(
+              children: [
+                _MenuItem(
+                  icon: Icons.download_rounded,
+                  title: '我的下载',
+                  route: '/downloads',
+                ),
+                Divider(height: 1, indent: 60, endIndent: 16),
+                _MenuItem(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  title: '我的评论',
+                  route: '/personal_comments',
+                ),
+                Divider(height: 1, indent: 60, endIndent: 16),
+                _MenuItem(
+                  icon: Icons.bookmark_outline_rounded,
+                  title: '本地收藏夹',
+                  route: '/local_favorites',
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );
@@ -179,9 +205,9 @@ class _MenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () => context.push(route),
-      leading: Icon(icon),
+      leading: Icon(icon, color: context.colorScheme.primary),
       title: Text(title, style: context.textTheme.titleMedium),
-      trailing: const Icon(Icons.chevron_right),
+      trailing: const Icon(Icons.chevron_right_rounded),
     );
   }
 }

@@ -63,6 +63,10 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> with WindowListener, RequestMixin {
+  static const _desktopChannel = MethodChannel('haka_comic/ohos_desktop');
+  String? _pendingDesktopRoute;
+  bool _desktopNavigationScheduled = false;
+
   late final _handler = checkIsUpdated.useRequest(
     // HarmonyOS port: do not advertise upstream Android/iOS releases.
     manual: isOhos || !AppConf().checkUpdate,
@@ -89,6 +93,7 @@ class _AppState extends State<App> with WindowListener, RequestMixin {
       isAuthorized = didAuthenticate;
       isVerifying = false;
     });
+    _scheduleDesktopNavigation();
   }
 
   @override
@@ -103,6 +108,14 @@ class _AppState extends State<App> with WindowListener, RequestMixin {
       windowManager.addListener(this);
     }
 
+    if (isOhos) {
+      appRouter.routerDelegate.addListener(_scheduleDesktopNavigation);
+      _desktopChannel.setMethodCallHandler((call) async {
+        if (call.method == 'actionAvailable') await _readDesktopAction();
+      });
+      unawaited(_readDesktopAction());
+    }
+
     if (AppConf().needAuth) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         auth();
@@ -115,7 +128,54 @@ class _AppState extends State<App> with WindowListener, RequestMixin {
     if (isDesktop) {
       windowManager.removeListener(this);
     }
+    if (isOhos) {
+      appRouter.routerDelegate.removeListener(_scheduleDesktopNavigation);
+      _desktopChannel.setMethodCallHandler(null);
+    }
     super.dispose();
+  }
+
+  Future<void> _readDesktopAction() async {
+    try {
+      final action = await _desktopChannel.invokeMethod<String>('takeAction');
+      final route = switch (action) {
+        'search' => '/search',
+        'history' => '/history',
+        'downloads' => '/downloads',
+        'favorites' => '/favorites',
+        'rank' => '/rank',
+        _ => null,
+      };
+      if (!mounted || route == null) return;
+      _pendingDesktopRoute = route;
+      _scheduleDesktopNavigation();
+    } on MissingPluginException {
+      // Older OHOS hosts do not expose desktop actions.
+    } on PlatformException catch (error) {
+      Log.e('Read HarmonyOS desktop action', error: error);
+    }
+  }
+
+  void _scheduleDesktopNavigation() {
+    if (_pendingDesktopRoute == null || _desktopNavigationScheduled) return;
+    _desktopNavigationScheduled = true;
+    final binding = WidgetsBinding.instance;
+    binding.addPostFrameCallback((_) {
+      _desktopNavigationScheduled = false;
+      final route = _pendingDesktopRoute;
+      if (!mounted ||
+          route == null ||
+          navigatorKey.currentState == null ||
+          !AppConf().isLogged ||
+          (AppConf().needAuth && !isAuthorized)) {
+        return;
+      }
+      _pendingDesktopRoute = null;
+      if (appRouter.state.matchedLocation != route) {
+        unawaited(appRouter.push<void>(route));
+      }
+    });
+    binding.ensureVisualUpdate();
   }
 
   @override

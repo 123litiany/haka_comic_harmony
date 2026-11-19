@@ -12,7 +12,9 @@ import 'package:haka_comic/widgets/error_page.dart';
 import 'package:haka_comic/widgets/ui_image.dart';
 
 class Categories extends StatefulWidget {
-  const Categories({super.key});
+  const Categories({super.key, this.scrollController});
+
+  final ScrollController? scrollController;
 
   @override
   State<Categories> createState() => _CategoriesState();
@@ -46,7 +48,7 @@ class _CategoriesState extends State<Categories> with RequestMixin {
   Widget build(BuildContext context) {
     return switch (handler.state) {
       Success(:final data) => Padding(
-        padding: .fromLTRB(0, context.top, 0, context.bottom),
+        padding: .only(top: context.top),
         child: _buildCategoryList(data.categories),
       ),
       Error(:final error) => ErrorPage(
@@ -69,6 +71,7 @@ class _CategoriesState extends State<Categories> with RequestMixin {
       );
     }
     return GridView.builder(
+      controller: widget.scrollController,
       scrollCacheExtent: ScrollCacheExtent.pixels(context.height * 1.5),
       gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: UiMode.m1(context)
@@ -76,11 +79,11 @@ class _CategoriesState extends State<Categories> with RequestMixin {
             : UiMode.m2(context)
             ? 135
             : 140,
-        mainAxisSpacing: 5,
-        crossAxisSpacing: 3,
-        childAspectRatio: 1 / 1.35,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 8,
+        childAspectRatio: 1 / 1.4,
       ),
-      padding: const .symmetric(horizontal: 8.0),
+      padding: .fromLTRB(12, 6, 12, context.bottom + 8),
       itemCount: visibleExtraMenus.length + visibleCategories.length,
       itemBuilder: (context, index) {
         if (index < visibleExtraMenus.length) {
@@ -93,52 +96,60 @@ class _CategoriesState extends State<Categories> with RequestMixin {
   }
 
   Widget _buildMenuItem(Map<String, String> item) {
-    return InkWell(
-      key: ValueKey(item['title']),
+    return _buildCategoryTile(
+      title: item['title']!,
+      image: Image.asset(item['icon']!, fit: BoxFit.cover),
       onTap: () => context.push(item['path']!),
-      borderRadius: BorderRadius.circular(6),
-      child: Column(
-        spacing: 5,
-        children: [
-          AspectRatio(
-            aspectRatio: 1,
-            child: Card(
-              clipBehavior: .hardEdge,
-              elevation: 0,
-              child: Image.asset(item['icon']!),
-            ),
-          ),
-          Text(item['title']!, style: context.textTheme.labelLarge),
-        ],
-      ),
     );
   }
 
   Widget _buildItem(Category item) {
+    return _buildCategoryTile(
+      title: item.title,
+      onTap: item.isWeb == true
+          ? null
+          : () => context.push('/comics?c=${item.title}'),
+      image: UiImage(
+        url: item.thumb.url,
+        cacheKey: item.thumb.cacheKey,
+        filterQuality: .medium,
+        cacheWidth: 150,
+      ),
+    );
+  }
+
+  Widget _buildCategoryTile({
+    required String title,
+    required Widget image,
+    required VoidCallback? onTap,
+  }) {
+    final radius = BorderRadius.circular(14);
     return InkWell(
-      key: ValueKey(item.title),
-      onTap: () {
-        if (item.isWeb ?? false) return;
-        context.push('/comics?c=${item.title}');
-      },
-      borderRadius: BorderRadius.circular(6),
+      key: ValueKey(title),
+      onTap: onTap,
+      borderRadius: radius,
       child: Column(
-        spacing: 5,
+        spacing: 7,
         children: [
           AspectRatio(
             aspectRatio: 1,
-            child: Card(
-              clipBehavior: .hardEdge,
-              elevation: 0,
-              child: UiImage(
-                url: item.thumb.url,
-                cacheKey: item.thumb.cacheKey,
-                filterQuality: .medium,
-                cacheWidth: 150,
+            child: ClipRRect(
+              borderRadius: radius,
+              child: ColoredBox(
+                color: context.colorScheme.surfaceContainer,
+                child: image,
               ),
             ),
           ),
-          Text(item.title, style: context.textTheme.labelLarge),
+          Expanded(
+            child: Text(
+              title,
+              style: context.textTheme.labelLarge,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );

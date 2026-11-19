@@ -15,6 +15,13 @@
     {
       "name": "EntryAbility_label",
       "value": "HaKa"
-    }
+    },
+    { "name": "shortcut_search", "value": "搜索" },
+    { "name": "shortcut_history", "value": "阅读历史" },
+    { "name": "shortcut_downloads", "value": "我的下载" },
+    { "name": "shortcut_favorites", "value": "我的收藏" },
+    { "name": "shortcut_rank", "value": "排行榜" },
+    { "name": "reading_card_label", "value": "HaKa 阅读快捷入口" },
+    { "name": "reading_card_description", "value": "搜索漫画，查看收藏、排行榜、阅读历史和下载" }
   ]
 }

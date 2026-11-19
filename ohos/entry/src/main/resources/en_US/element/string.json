@@ -11,6 +11,13 @@
     {
       "name": "EntryAbility_label",
       "value": "HaKa"
-    }
+    },
+    { "name": "shortcut_search", "value": "Search" },
+    { "name": "shortcut_history", "value": "History" },
+    { "name": "shortcut_downloads", "value": "Downloads" },
+    { "name": "shortcut_favorites", "value": "Favorites" },
+    { "name": "shortcut_rank", "value": "Rankings" },
+    { "name": "reading_card_label", "value": "HaKa Reading Shortcuts" },
+    { "name": "reading_card_description", "value": "Open search, favorites, rankings, history, and downloads" }
   ]
 }
