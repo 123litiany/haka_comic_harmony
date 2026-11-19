@@ -8,7 +8,7 @@
 
 ## 鸿蒙版进度
 
-**[1.0.2 Preview 3 下载与更新日志](https://github.com/123litiany/haka_comic_harmony/releases/tag/v1.0.2-harmony-preview.3)**：改进注册错误提示，增加随机昵称/登录账号生成，防止重复提交，注册成功后回填登录页；完善请求签名与重试。34 项相关回归和实际 Dart 接口的新账号注册、两条线路登录通过。**服务器仍曾对随机昵称返回重名，根因未完全确认。** 详见[注册改进记录](REGISTRATION_FIX.md)。
+**[1.0.2 Preview 3 下载与更新日志](https://github.com/123litiany/haka_comic_harmony/releases/tag/v1.0.2-harmony-preview.3)**：改进注册错误提示，增加随机昵称/登录账号生成，防止重复提交，注册成功后回填登录页 详见[注册改进记录](REGISTRATION_FIX.md)。
 
 **[1.0.1 Preview 2 下载与更新日志](https://github.com/123litiany/haka_comic_harmony/releases/tag/v1.0.1-harmony-preview.2)**：应用显示名为 `HaKa`，增加淡绿色 `Ha` / `ka` 图标、鸿蒙音量键翻页、阅读亮屏、独立阅读亮度、后台暂停自动阅读和平板声明。改用 release/AOT 构建后，手机包约 **34 MB**，相比旧 debug 包减少约 **74%**。构建、测试范围及包体对比见 [更新记录](HARMONY_READER_UPDATE.md)。
 
@@ -45,55 +45,6 @@ HAP 下载入口在本仓库 **[Releases → Assets](https://github.com/123litia
 
 ---
 
-# 上游 HaKa Comic
-
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg?logo=gnu)](https://opensource.org/licenses/GPL-3.0)
-[![GitHub Stars](https://img.shields.io/github/stars/raoxwup/haka_comic.svg?style=flat&logo=github)](https://github.com/raoxwup/haka_comic/stargazers)
-
-## 📖 项目简介
-
-第三方哗咔漫画跨平台客户端。**学习 flutter 的练习项目**，支持 Android、iOS、Mac、Windows、Linux平台，目前仍在持续完善中。如果觉得项目有帮助，欢迎给个 star ⭐ 支持一下
-
----
-
-## 🖼️ 项目截图
-
-| 分类浏览                                          | 漫画列表                                              | 漫画详情                                              | 阅读界面                                          |
-| ------------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------- |
-| <img src="./screenshots/分类.png" width="200">    | <img src="./screenshots/漫画列表.png" width="200">    | <img src="./screenshots/漫画详情.png" width="200">    | <img src="./screenshots/阅读.png" width="200">    |
-| <img src="./screenshots/pc-分类.png" width="200"> | <img src="./screenshots/pc-漫画列表.png" width="200"> | <img src="./screenshots/pc-漫画详情.png" width="200"> | <img src="./screenshots/pc-阅读.png" width="200"> |
-
-**截图已经过时，以实际项目界面为主**
-
----
-
-## ⬇️ 下载
-
-所有平台安装包都在 GitHub [Releases](https://github.com/raoxwup/haka_comic/releases)。
-
-| 平台    | 资源类型                                        | 选择建议 / 备注                                                                                                                                                                                                                                                                |
-| ------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Android | `APK`（`arm64` 推荐 / `universal` 通用 / 可选） | 大多数真机选 `arm64`；不确定就选 `universal`（体积更大）。`x86_64` 通常用于模拟器。                                                                                                                                                                                            |
-| iOS     | `IPA`（未签名）                                 | 需要自签/侧载后才能安装。推荐用 SideStore/AltStore：添加源 `alt_store.json`（`https://raw.githubusercontent.com/raoxwup/haka_comic/main/alt_store.json`），并按官方文档完成前置配置（如 [SideStore 安装前置](https://docs.sidestore.io/zh/docs/installation/prerequisites)）。 |
-| macOS   | `DMG`                                           | 首次打开可能需要在系统安全设置里手动允许。                                                                                                                                                                                                                                     |
-| Windows | `EXE`                                           | Inno Setup 安装器，可能触发 SmartScreen 提示，按需放行。                                                                                                                                                                                                                       |
-| Linux   | `DEB`（`amd64` / `arm64`）                      | Debian/Ubuntu 系：`sudo apt install ./xxx.deb`。目前仅提供 `.deb`。                                                                                                                                                                                                            |
-
-> 提示：具体资产文件名会随版本变化，按 Release 页面展示为准。
-
----
-
-## 🛠️ 开发环境
-
-| 组件           | 版本要求                                             | 官网安装指南                                                       | 验证命令                                  |
-| -------------- | ---------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------- |
-| Flutter SDK    | `3.41.2`（见 `pubspec.yaml`）                        | [Flutter 安装文档](https://docs.flutter.dev/get-started/install)   | `flutter --version` / `flutter doctor -v` |
-| Dart SDK       | `>= 3.10.0 < 4.0.0`（见 `pubspec.yaml`）             | [Dart SDK 安装文档](https://dart.dev/get-dart)                     | `dart --version`                          |
-| Rust toolchain | 建议使用 stable（本项目 Rust crate 为 edition 2021） | [Rust 安装文档（rustup）](https://www.rust-lang.org/tools/install) | `rustc --version` / `cargo --version`     |
-
-> 说明：Flutter SDK 自带 Dart SDK；如果你已经安装了 Flutter，一般无需再单独安装 Dart。
-
----
 
 ## ⚠️ 免责声明
 
